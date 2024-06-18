@@ -1,15 +1,19 @@
-import { Pool } from 'pg';
-import dotenv from 'dotenv';
+import { Client } from "pg";
+import dotenv from "dotenv";
 
 dotenv.config();
 
-const pool = new Pool({
-
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || '5432',10),
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
-
+const client = new Client({
+  connectionString: process.env.DATABASE_URL,
 });
-export default pool;
+
+const connectToDatabase = async () => {
+  try {
+    await client.connect();
+    console.log("Connected to the database");
+  } catch (err) {
+    console.error("Failed to connect to the database", err);
+  }
+};
+
+export { connectToDatabase, client };

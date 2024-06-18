@@ -1,21 +1,28 @@
-import express,{ Request, Response }  from "express";
-import pool from "./db";
+import express from 'express';
+import { Client } from 'pg';
+import testRoute from './routes/testRoute';
+import dotenv from 'dotenv';
 
+dotenv.config();
+
+console.log(`Database URL: ${process.env.DATABASE_URL}`);
 
 const app = express();
-const port = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.get('/', async (req: Request, res: Response) => {
-    try {
-        const client = await pool.connect();
-        await client.query('SELECT NOW()');
-        client.release();
-        res.send('Database connection successful!');
-      } catch (err) {
-        res.status(500).send('Database connection failed!');
-      }
+const client = new Client({
+  connectionString: process.env.DATABASE_URL,
 });
 
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-  });
+client
+  .connect()
+  .then(() => console.log('Connected to database'))
+  .catch((err: Error) => console.error('Failed to connect to database', err));
+
+app.use('/admin', testRoute(client));
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+export { client };
